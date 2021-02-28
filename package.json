@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "wretch": "^1.7.4"
+  }
+}
