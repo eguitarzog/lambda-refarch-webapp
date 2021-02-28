@@ -2,16 +2,18 @@
 // SPDX-License-Identifier: MIT-0
 
 // default imports
-const AWSXRay = require('aws-xray-sdk-core')
-const AWS = AWSXRay.captureAWS(require('aws-sdk'))
+// const AWSXRay = require('aws-xray-sdk-core')
+// const AWS = AWSXRay.captureAWS(require('aws-sdk'))
+const AWS = require('aws-sdk')
 const { metricScope, Unit } = require("aws-embedded-metrics")
 const DDB = new AWS.DynamoDB({ apiVersion: "2012-10-08" })
 const { v1: uuidv1 } = require('uuid');
 
 // environment variables
-const { TABLE_NAME, ENDPOINT_OVERRIDE, REGION } = process.env
+const { TABLE_NAME = 'TodoTable', ENDPOINT_OVERRIDE = 'http://localhost:8080', REGION='us-west-2' } = process.env
 const options = { region: REGION }
 AWS.config.update({ region: REGION })
+console.log('add todo!', TABLE_NAME, ENDPOINT_OVERRIDE, REGION)
 
 if (ENDPOINT_OVERRIDE !== "") {
     options.endpoint = ENDPOINT_OVERRIDE
@@ -19,11 +21,15 @@ if (ENDPOINT_OVERRIDE !== "") {
 
 const docClient = new AWS.DynamoDB.DocumentClient(options)
 // response helper
-const response = (statusCode, body, additionalHeaders) => ({
-    statusCode,
-    body: JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', ...additionalHeaders },
-})
+const response = (statusCode, body, additionalHeaders) => {
+    console.log('response!!')
+    console.log('body', body)
+    return {
+        statusCode,
+        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', ...additionalHeaders },
+    }
+}
 
 function isValidRequest(context, event) {
     return (event.body !== null)
@@ -31,8 +37,9 @@ function isValidRequest(context, event) {
 
 function getCognitoUsername(event){
     let authHeader = event.requestContext.authorizer;
-    if (authHeader !== null)
+    if (authHeader)
     {
+        // requestContext.authorizer.claims stores the the identities
         return authHeader.claims["cognito:username"];
     }
     return null;
@@ -70,8 +77,13 @@ function addRecord(event) {
 
 // Lambda Handler
 exports.addToDoItem =
+    // metricScope to decorate the anonymous function, so we can log the metrics
     metricScope(metrics =>
+        // @event includes congnito user info in header and body which is sent from client
+        // @context is lambda runtime environment information
+        // console.log can print the log to CloudWatch
         async (event, context, callback) => {
+            console.log("TEST 2")
             metrics.setNamespace('TodoApp')
             metrics.putDimensions({ Service: "addTodo" })
             metrics.setProperty("RequestId", context.requestId)
@@ -86,6 +98,7 @@ exports.addToDoItem =
                 metrics.putMetric("Success", 1, Unit.Count)
                 return response(200, data)
             } catch (err) {
+                console.error(err)
                 metrics.putMetric("Error", 1, Unit.Count)
                 return response(400, { message: err.message })
             }

@@ -7,6 +7,7 @@ import './App.css';
 import logo from './aws.png';
 
 import config from './config';
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 function App() {
   const [alert, setAlert] = useState();
@@ -150,14 +151,14 @@ function App() {
         <Jumbotron>
           <Row>
             <Col md="6" className="logo">
-              <h1>Serverless Todoro!</h1>
+              <h1>Serverless Todo</h1>
               <p>This is a demo that showcases AWS serverless.</p>
               <p>The application is built using the SAM CLI toolchain, and uses AWS Lambda, Amazon DynamoDB, and Amazon API Gateway for API services and Amazon Cognito for identity.</p>
 
               <img src={logo} alt="Logo" />
             </Col>
             <Col md="6">
-              {idToken.length > 0 ?
+              {isDevelopment || idToken.length > 0 ?
                 (
                   <ToDo updateAlert={updateAlert} toDos={toDos} addToDo={addToDo} deleteToDo={deleteToDo} completeToDo={completeToDo} />
                 ) : (
