@@ -1,20 +1,39 @@
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import wretch from "wretch";
+import useFetch from "use-http";
+import styles from "../styles/room.module.scss";
 
 const RoomView = function () {
   const { id } = useParams();
-  const [room, setRoom] = useState<IRoom | undefined>();
+  const { loading, error, data = {} } = useFetch(`/room.json?id=${id}`, {}, []);
 
-  useEffect(() => {
-    wretch(`/room.json?id=${id}`)
-      .get()
-      .json((json) => {
-        setRoom(json as IRoom);
-      });
-  });
+  if (loading) {
+    return <>Loading...</>;
+  }
 
-  return <>{room ? <h1>{room.title}</h1> : <>Not Found</>}</>;
+  if (error) {
+    console.error(error);
+    return <>Error</>;
+  }
+
+  const room: IRoom = data;
+  console.log("render");
+
+  return (
+    <>
+      <h1>{room.title}</h1>
+      <div className={styles.task}>
+        <input type="checkbox" />
+        {room.tasks?.map((task) => (
+          <div key={task.id}>{task.title}</div>
+        ))}
+      </div>
+      <div>
+        {room.logs?.map((log) => (
+          <div key={log.id}>{log.duration}</div>
+        ))}
+      </div>
+    </>
+  );
 };
 
 export default RoomView;
