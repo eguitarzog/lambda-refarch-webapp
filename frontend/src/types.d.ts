@@ -1,20 +1,25 @@
 declare module "*.scss";
 interface IRoom {
-  id: string;
+  id?: string;
   title: string;
-  tasks?: ITask[];
-  logs?: ILog[];
+  tasks: ITask[];
+  logs: ILog[];
 }
 
 interface ITask {
-  id: string;
+  id?: string;
   title: string;
   isDone: boolean;
 }
 
 interface ILog {
-  id: string;
+  id?: string;
   duration: number;
   elapsed: number;
   status: string;
+}
+
+interface ITimerProps {
+  duration: number;
+  onTimeUp();
 }

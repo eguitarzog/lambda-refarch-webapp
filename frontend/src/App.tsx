@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import RoomListView from "./components/RoomListView";
 import RoomView from "./components/RoomView";
 
-const rooms: IRoom[] = [{ id: "1", title: "Work" }];
+const rooms: IRoom[] = [{ id: "1", title: "Work", tasks: [], logs: [] }];
 
 function App() {
   return (
